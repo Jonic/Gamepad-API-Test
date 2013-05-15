@@ -5,15 +5,19 @@
 --------------------------------------------
 */
 
-var Gamepads, animationLoop, animationLoopId, canvas, context, gamepads;
+var Gamepads, Utils, animationLoop, animationLoopId, canvas, context, gamepads, updateTestData, utils;
 
 Gamepads = (function() {
 
   function Gamepads() {}
 
-  Gamepads.prototype.init = function() {
+  Gamepads.prototype.init = function(callback) {
+    if (utils.isFunction(callback)) {
+      this.callback = callback;
+    }
     this.getPlayers();
     this.prevTimestamps = [];
+    this.playerInputData = [];
     this.buttonsIndex = {
       a: 1,
       b: 2,
@@ -27,17 +31,31 @@ Gamepads = (function() {
     return this;
   };
 
-  Gamepads.prototype.getInputValue = function(input) {
-    return Math.round(input);
+  Gamepads.prototype.getInputDataForUpdatedGamepads = function() {
+    var i, player, _i, _len, _ref;
+    this.getPlayers();
+    _ref = this.players;
+    for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
+      player = _ref[i];
+      if (player.timestamp && player.timestamp === this.prevTimestamps[i]) {
+        this.playerInputData[i].updated = false;
+      } else {
+        this.prevTimestamps[i] = player.timestamp;
+        this.playerInputData[i] = this.getSanitisedGamepadInputData(player);
+      }
+    }
+    if (this.callback != null) {
+      this.callback.call(this, this.playerInputData);
+    }
+    return this;
   };
 
   Gamepads.prototype.getPlayers = function() {
-    var gamepadsChanged, player, rawGamepads, _i, _len;
-    rawGamepads = navigator.webkitGetGamepads();
+    var player, _i, _len, _ref;
     this.players = [];
-    gamepadsChanged = false;
-    for (_i = 0, _len = rawGamepads.length; _i < _len; _i++) {
-      player = rawGamepads[_i];
+    _ref = navigator.webkitGetGamepads();
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      player = _ref[_i];
       if (player != null) {
         this.players.push(player);
       }
@@ -45,41 +63,41 @@ Gamepads = (function() {
     return this;
   };
 
-  Gamepads.prototype.pollGamepads = function() {
-    var i, player, _i, _len, _ref;
-    this.getPlayers();
-    _ref = this.players;
-    for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
-      player = _ref[i];
-      if (player.timestamp && player.timestamp === this.prevTimestamps[i]) {
-        continue;
-      }
-      this.prevTimestamps[i] = player.timestamp;
-      this.updateDisplay(player);
-    }
-    return this;
-  };
-
-  Gamepads.prototype.updateDisplay = function(player) {
-    var axes, axisValues, buttonValues, buttons;
+  Gamepads.prototype.getSanitisedGamepadInputData = function(player) {
+    var axes, axisValues, axisX, axisY, buttonValues, buttons;
     axes = player.axes;
     buttons = player.buttons;
+    axisX = Math.round(axes[0]);
+    axisY = Math.round(axes[1]);
     axisValues = {
-      x: this.getInputValue(axes[0]),
-      y: this.getInputValue(axes[1])
+      up: +(axisY === -1),
+      down: +(axisY === 1),
+      left: +(axisX === -1),
+      right: +(axisX === 1)
     };
+    axisValues.upLeft = +(axisValues.up && axisValues.left);
+    axisValues.upRight = +(axisValues.up && axisValues.right);
+    axisValues.downLeft = +(axisValues.down && axisValues.left);
+    axisValues.downRight = +(axisValues.down && axisValues.right);
+    axisValues.leftUp = +(axisValues.left && axisValues.up);
+    axisValues.leftDown = +(axisValues.left && axisValues.down);
+    axisValues.rightUp = +(axisValues.right && axisValues.up);
+    axisValues.rightDown = +(axisValues.right && axisValues.down);
     buttonValues = {
-      a: this.getInputValue(buttons[this.buttonsIndex.a]),
-      b: this.getInputValue(buttons[this.buttonsIndex.b]),
-      x: this.getInputValue(buttons[this.buttonsIndex.x]),
-      y: this.getInputValue(buttons[this.buttonsIndex.y]),
-      l: this.getInputValue(buttons[this.buttonsIndex.l]),
-      r: this.getInputValue(buttons[this.buttonsIndex.r]),
-      start: this.getInputValue(buttons[this.buttonsIndex.start]),
-      select: this.getInputValue(buttons[this.buttonsIndex.select])
+      a: Math.round(buttons[this.buttonsIndex.a]),
+      b: Math.round(buttons[this.buttonsIndex.b]),
+      x: Math.round(buttons[this.buttonsIndex.x]),
+      y: Math.round(buttons[this.buttonsIndex.y]),
+      l: Math.round(buttons[this.buttonsIndex.l]),
+      r: Math.round(buttons[this.buttonsIndex.r]),
+      start: Math.round(buttons[this.buttonsIndex.start]),
+      select: Math.round(buttons[this.buttonsIndex.select])
     };
-    console.log(axisValues, buttonValues);
-    return this;
+    return {
+      axisValues: axisValues,
+      buttonValues: buttonValues,
+      updated: true
+    };
   };
 
   return Gamepads;
@@ -92,6 +110,18 @@ Gamepads = (function() {
 */
 
 
+Utils = (function() {
+
+  function Utils() {}
+
+  Utils.prototype.isFunction = function(obj) {
+    return !!(obj && obj.constructor && obj.call && obj.apply);
+  };
+
+  return Utils;
+
+})();
+
 /* --------------------------------------------
      Begin _bootstrap.coffee
 --------------------------------------------
@@ -100,22 +130,45 @@ Gamepads = (function() {
 
 animationLoop = function(now) {
   canvas.width = canvas.width;
-  gamepads.pollGamepads();
+  gamepads.getInputDataForUpdatedGamepads();
   window.requestAnimationFrame(animationLoop);
 };
 
+updateTestData = function(playerInputData) {
+  var player, _i, _len;
+  for (_i = 0, _len = playerInputData.length; _i < _len; _i++) {
+    player = playerInputData[_i];
+    if (player.updated) {
+      document.querySelector('.value-up').innerHTML = player.axisValues.up;
+      document.querySelector('.value-down').innerHTML = player.axisValues.down;
+      document.querySelector('.value-left').innerHTML = player.axisValues.left;
+      document.querySelector('.value-right').innerHTML = player.axisValues.right;
+      document.querySelector('.value-a').innerHTML = player.buttonValues.a;
+      document.querySelector('.value-b').innerHTML = player.buttonValues.b;
+      document.querySelector('.value-x').innerHTML = player.buttonValues.x;
+      document.querySelector('.value-y').innerHTML = player.buttonValues.y;
+      document.querySelector('.value-l').innerHTML = player.buttonValues.l;
+      document.querySelector('.value-r').innerHTML = player.buttonValues.r;
+      document.querySelector('.value-select').innerHTML = player.buttonValues.select;
+      document.querySelector('.value-start').innerHTML = player.buttonValues.start;
+    }
+  }
+};
+
 canvas = document.createElement('canvas');
-
-context = canvas.getContext('2d');
-
-document.body.appendChild(canvas);
 
 canvas.width = document.body.clientWidth;
 
 canvas.height = document.body.clientHeight;
 
+document.body.appendChild(canvas);
+
+context = canvas.getContext('2d');
+
 gamepads = new Gamepads();
 
-gamepads.init();
+utils = new Utils();
+
+gamepads.init(updateTestData);
 
 animationLoopId = window.requestAnimationFrame(animationLoop);
