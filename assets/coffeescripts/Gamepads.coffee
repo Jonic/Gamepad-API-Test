@@ -55,29 +55,29 @@ class Gamepads
 		axisY = Math.round(axes[1])
 
 		axisValues =
-			up:    +(axisY == -1)
-			down:  +(axisY == 1)
-			left:  +(axisX == -1)
-			right: +(axisX == 1)
+			up:    axisY == -1
+			down:  axisY == 1
+			left:  axisX == -1
+			right: axisX == 1
 
-		axisValues.upLeft    = +(axisValues.up    and axisValues.left)
-		axisValues.upRight   = +(axisValues.up    and axisValues.right)
-		axisValues.downLeft  = +(axisValues.down  and axisValues.left)
-		axisValues.downRight = +(axisValues.down  and axisValues.right)
-		axisValues.leftUp    = +(axisValues.left  and axisValues.up)
-		axisValues.leftDown  = +(axisValues.left  and axisValues.down)
-		axisValues.rightUp   = +(axisValues.right and axisValues.up)
-		axisValues.rightDown = +(axisValues.right and axisValues.down)
+		axisValues.upLeft    = axisValues.up    and axisValues.left
+		axisValues.upRight   = axisValues.up    and axisValues.right
+		axisValues.downLeft  = axisValues.down  and axisValues.left
+		axisValues.downRight = axisValues.down  and axisValues.right
+		axisValues.leftUp    = axisValues.left  and axisValues.up
+		axisValues.leftDown  = axisValues.left  and axisValues.down
+		axisValues.rightUp   = axisValues.right and axisValues.up
+		axisValues.rightDown = axisValues.right and axisValues.down
 
 		buttonValues =
-			a:      Math.round(buttons[this.buttonsIndex.a])
-			b:      Math.round(buttons[this.buttonsIndex.b])
-			x:      Math.round(buttons[this.buttonsIndex.x])
-			y:      Math.round(buttons[this.buttonsIndex.y])
-			l:      Math.round(buttons[this.buttonsIndex.l])
-			r:      Math.round(buttons[this.buttonsIndex.r])
-			start:  Math.round(buttons[this.buttonsIndex.start])
-			select: Math.round(buttons[this.buttonsIndex.select])
+			a:      Math.round(buttons[this.buttonsIndex.a])      == 1
+			b:      Math.round(buttons[this.buttonsIndex.b])      == 1
+			x:      Math.round(buttons[this.buttonsIndex.x])      == 1
+			y:      Math.round(buttons[this.buttonsIndex.y])      == 1
+			l:      Math.round(buttons[this.buttonsIndex.l])      == 1
+			r:      Math.round(buttons[this.buttonsIndex.r])      == 1
+			start:  Math.round(buttons[this.buttonsIndex.start])  == 1
+			select: Math.round(buttons[this.buttonsIndex.select]) == 1
 
 		return {
 			axisValues: axisValues

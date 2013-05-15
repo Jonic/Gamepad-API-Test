@@ -1,8 +1,10 @@
+animationLoopId = null;
+
 animationLoop = (now) ->
 
 	canvas.width = canvas.width
 
-	gamepads.getInputDataForUpdatedGamepads()
+	game.update()
 
 	window.requestAnimationFrame(animationLoop)
 
@@ -31,14 +33,15 @@ updateTestData = (playerInputData) ->
 canvas = document.createElement('canvas')
 canvas.width  = document.body.clientWidth
 canvas.height = document.body.clientHeight
+context = canvas.getContext('2d')
 
 document.body.appendChild(canvas)
 
-context = canvas.getContext('2d')
+CONST     = new Constants()
+game      = new Game()
+gamepads  = new Gamepads()
+utils     = new Utils()
+world     = new World()
+character = new Character()
 
-gamepads = new Gamepads()
-utils    = new Utils()
-
-gamepads.init(updateTestData)
-
-animationLoopId = window.requestAnimationFrame(animationLoop)
+game.init()

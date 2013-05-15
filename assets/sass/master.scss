@@ -6,6 +6,13 @@ html, body {
 	color: rgb(240, 240, 240);
 	font-family: monospace;
 	height: 100%;
+	margin: 0;
 	overflow: hidden;
+	padding: 0;
 	width: 100%;
+}
+
+.debugData {
+	left: 1em;
+	position: absolute;
 }
