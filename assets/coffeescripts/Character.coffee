@@ -86,4 +86,7 @@ class Character
 			this.position.x -= 10 if buttonValues.l
 			this.position.x += 10 if buttonValues.r
 
+			if buttonValues.select
+				this.init()
+
 		@

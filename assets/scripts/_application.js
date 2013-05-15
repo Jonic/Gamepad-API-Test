@@ -103,6 +103,9 @@ Character = (function() {
       if (buttonValues.r) {
         this.position.x += 10;
       }
+      if (buttonValues.select) {
+        this.init();
+      }
     }
     return this;
   };
