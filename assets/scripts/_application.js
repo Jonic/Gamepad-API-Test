@@ -61,6 +61,9 @@ Character = (function() {
   Character.prototype.updateValuesFromGamepadInput = function() {
     var axisValues, buttonValues, gamepadValues;
     gamepadValues = gamepads.playerInputData[0];
+    if (!gamepadValues) {
+      return;
+    }
     axisValues = gamepadValues.axisValues;
     buttonValues = gamepadValues.buttonValues;
     if (buttonValues.start) {

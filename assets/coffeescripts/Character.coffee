@@ -55,6 +55,10 @@ class Character
 	updateValuesFromGamepadInput: ->
 
 		gamepadValues = gamepads.playerInputData[0]
+
+		if !gamepadValues
+			return
+
 		axisValues    = gamepadValues.axisValues
 		buttonValues  = gamepadValues.buttonValues
 
